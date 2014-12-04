@@ -6,10 +6,10 @@ class bokstav {
   char Char;
 
 
-  bokstav(char tempChar, int tempx, int tempy) {   //    constructor
+  bokstav(char tempChar, int tempX, int tempY) {   //    constructor
     Char=tempChar;
-    x = tempx;
-    y = tempy;
+    x = tempX;
+    y = tempY;
   }
 
 
