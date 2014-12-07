@@ -8,20 +8,21 @@
  //                                                                              //
  //                                                                              //
  --------------------------------------------------------------------------------*/
-final String version= " 0.0.6";
+final String version= " 0.1.1";
 import ddf.minim.*;
 float angle, zoom=1, maxZoom=5;
-float groundH=0;
+float groundL=0;
 float carX, carY, carW, carH;
 //AudioPlayer BGM;
 
 
 String loadedCityName[]; // här kommer all stadsnamn att förvaras
-int x,y,groundX=0,groundXv=-10;
+int x, y, groundX=0, groundXv=-10;
 //classer
 ArrayList<bokstav> chars =   new  ArrayList<bokstav>(); // empty arrayList för bokstäverna
 ArrayList<bagage> lives =   new  ArrayList<bagage>(); // empty arrayList för bokstäverna
 ArrayList<particle> particles =   new  ArrayList<particle>(); // empty arrayList för bokstäverna
+ArrayList<paralax> layer = new  ArrayList<paralax>(); // empty arrayList för paralax lager
 // bilder
 PImage img1, img2, img3, img4, img5; // bagage olika versionen bilder
 PImage building, ground;  // BG
@@ -54,7 +55,7 @@ void setup() {
   wheel2 = loadImage ("graphics/wheel-rear.png");
 
   size(displayWidth, displayHeight, OPENGL);
-  groundH=(height/5)*4;
+  groundL=(height/5)*4;
   if (frame != null) {  // gör program fönstret skalbar
     frame.setResizable(true);
   }
@@ -66,17 +67,20 @@ void setup() {
   println(parseChar(228), parseChar(229), parseChar(246), parseChar(228-32), parseChar(229-32), parseChar(246-32)); 
   println("&#228" + "&auml" +"\206");
   println("loading class objects");
+
   // bilen
   carX= width/4;
-  carY=groundH-150;
+  carY=groundL-150;
   carW=270;
   carH=160;
+
   // bagaget
-  lives.add(new bagage( img1, int(carX+140), int(carY-(220)), 120, 80));
-  lives.add(new bagage( img2, int(carX+100), int( carY-(160)), 110, 60));
-  lives.add(new bagage( img3, int(carX+80), int(carY-(120)), 110, 60));
-  lives.add(new bagage( img4, int(carX+150), int(carY-(70)), 120, 90));
-  lives.add(new bagage( img5, int(carX+50), int(carY-(50)), 100, 90));
+  lives.add(new bagage( img5, int(carX+50), int(carY-(30)), 100, 90));
+  lives.add(new bagage( img4, int(carX+150), int(carY-(30)), 110, 80));
+  lives.add(new bagage( img3, int(carX+80), int(carY-(90)), 110, 60));
+  lives.add(new bagage( img2, int(carX+100), int( carY-(150)), 110, 60));
+  lives.add(new bagage( img1, int(carX+140), int(carY-(210)), 120, 80));
+
 
   // bokstäverna
   chars.add(new bokstav('e', 100, 200));
@@ -88,6 +92,9 @@ void setup() {
   chars.add(new bokstav('e', 500, 400));
   chars.add(new bokstav('r', 500, 500));
 
+  // paralax layer
+  layer.add(new paralax(building, width*2, 0, building.width/2, building.height/2, -1, 0));
+  layer.add(new paralax(ground, 0, int( groundL), ground.width, ground.height, -20, 0));
 }
 
 
@@ -99,22 +106,23 @@ void setup() {
 
 
 void draw() {
- background(255/2);
-   pushMatrix();
-   translate(mouseX-width/2, mouseY-height/2);
-   scale(zoom);
+  background(255/2);
+  pushMatrix();
+  translate(mouseX-width/2, mouseY-height/2);
+  scale(zoom);
 
- fill(50,100,255,150);   
- rectMode(NORMAL);
- rect(0,0,width,height);   // background
- 
+  fill(50, 100, 255, 150);   
+  rectMode(NORMAL);
+  rect(0, 0, width, height);   // background
+
   println(zoom);
   //displayBG();
   image( building, width-500, 0, 300, height-300);  // byggnaden
-  if(groundX<-ground.width/2) groundX=0;  //reseting ground when reaching image end
-  groundX+=groundXv;
-  image( ground, groundX, groundH);   // mark
 
+  for (int i=0; i< layer.size (); i++) {   // updaterar & printar all bokstäver i arraylisten
+    layer.get(i).update();
+    layer.get(i).paint();
+  }
 
   for (int i=0; i< chars.size (); i++) {   // updaterar & printar all bokstäver i arraylisten
     chars.get(i).knockOff();
@@ -143,18 +151,11 @@ void draw() {
     chars.remove(chars.size()-1); // tar bort den sista bokstaven
   }
 
-  if  ( mousePressed ) {     // clicka med musen för att ta tillbaka bagagen till dessa koordinater
-    for (int i=0; i< lives.size (); i++) {
-      lives.get(i).x= lives.get(i).startX;
-      lives.get(i).vx= lives.get(i).startVx;
-      lives.get(i).vy= lives.get(i).startVy;
-      lives.get(i).y= lives.get(i).startY;
-      lives.get(i).angle=lives.get(i).startAngle;
-      lives.get(i).rotationV=lives.get(i).startRotationV;
-    }
+  if  ( mousePressed && mouseButton == RIGHT) {     // clicka med musen för att ta tillbaka bagagen till dessa koordinater
+    resetBagage();
   }
 
-  
+
   popMatrix(); // for zoom
   displayInfo();                // visar lite developer info
 }
@@ -167,8 +168,6 @@ void draw() {
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
 
 
-
-
 void displayCar(float x, float y, float w, float h) {  // funktion för bilen
   int wheelOffset=10, wheelSize=58;
   angle += 15;
@@ -178,22 +177,21 @@ void displayCar(float x, float y, float w, float h) {  // funktion för bilen
   image(car, x+random(2), y+random(2), w, h);  // bil
 
   ellipseMode(CENTER);
+
+  particles.add(new particle( x+w-wheelSize, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
   pushMatrix();
   translate( x+w-wheelOffset*8+random(2) +wheelSize/2, y+h-wheelSize/2+random(2)+wheelSize/2);
   rotate(radians(angle));
-  image(wheel1, 0-wheelSize/2, 0-wheelSize/2, wheelSize, wheelSize);  // hjul
+  image(wheel1, 0-wheelSize/2, 0-wheelSize/2, wheelSize, wheelSize);  // hjul F
   popMatrix();
 
-  //ellipse(x+(w-x)-wheelOffset, h, 50, 50);
-
+  particles.add(new particle( x+wheelSize/2, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
   pushMatrix();
   translate( x+wheelOffset+wheelSize/2+random(2), y+h-wheelSize/2+random(2)+wheelSize/2);
   rotate(radians(angle));
-  image(wheel2, 0-wheelSize/2, 0-wheelSize/2, wheelSize, wheelSize); // hjul
+  image(wheel2, 0-wheelSize/2, 0-wheelSize/2, wheelSize, wheelSize); // hjul B
   popMatrix();
-  //ellipse(x+wheelOffset, h, 50, 50);
 }
-
 
 void displayInfo() {  // visa information
   fill(255);
@@ -205,25 +203,15 @@ void displayBG() {
   image(bgImage, x, y, bgImage.width*0.4, bgImage.height*0.4);  // bil
 }
 
-void keyPressed() {
-}
-
-void keyReleased() {
-}
-
-
-void mousePressed() {
-}
-
-void mouseWheel(MouseEvent event) {  // krympa och förstora
-  int temp = event.getCount() ;
-  zoom += temp * 0.05;
-  if (zoom<=0) {
-    zoom=0;
-  }
-
-  if (zoom > maxZoom) {
-    zoom=maxZoom;
+void resetBagage() {
+  for (int i=0; i< lives.size (); i++) {
+    lives.get(i).x= lives.get(i).startX;
+    lives.get(i).vx= lives.get(i).startVx;
+    lives.get(i).vy= lives.get(i).startVy;
+    lives.get(i).y= lives.get(i).startY;
+    lives.get(i).angle=lives.get(i).startAngle;
+    lives.get(i).rotationV=lives.get(i).startRotationV;
+    lives.get(i).knockedOff= false;
   }
 }
 
