@@ -8,12 +8,14 @@
  //                                                                              //
  //                                                                              //
  --------------------------------------------------------------------------------*/
-final String version= " 0.1.1";
+final String version= " 0.1.2";
 import ddf.minim.*;
+Minim minim;
+AudioPlayer carSound, bagageSound, BGM;
 float angle, zoom=1, maxZoom=5;
 float groundL=0;
 float carX, carY, carW, carH;
-//AudioPlayer BGM;
+
 
 
 String loadedCityName[]; // här kommer all stadsnamn att förvaras
@@ -31,6 +33,7 @@ PImage bgImage; // bakgrunds bild
 PImage car; // bakgrunds bild
 PImage wheel1; // bakgrunds bild
 PImage wheel2; // bakgrunds bild
+PFont font;
 
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
 //--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
@@ -40,9 +43,21 @@ PImage wheel2; // bakgrunds bild
 
 
 void setup() {
-  // ljud och musik
+
+  size(displayWidth, displayHeight, OPENGL);
+  groundL=(height/5)*4;
+  if (frame != null) {  // gör program fönstret skalbar
+    frame.setResizable(true);
+  }
+
+  // create font
+  println("loading font");
+  font = loadFont("Chalkduster-48.vlw");
+  textFont (font);
+
+  // bilder
+  println("loading images");
   bgImage = loadImage("graphics/parisbg.png");  
-  println("loading graphics");
   building = loadImage("graphics/eiffel.png");
   ground = loadImage("graphics/road-gravel.png");
   img1 = loadImage("graphics/bag1.png");
@@ -54,21 +69,20 @@ void setup() {
   wheel1 = loadImage ("graphics/wheel-front.png");
   wheel2 = loadImage ("graphics/wheel-rear.png");
 
-  size(displayWidth, displayHeight, OPENGL);
-  groundL=(height/5)*4;
-  if (frame != null) {  // gör program fönstret skalbar
-    frame.setResizable(true);
-  }
   println("loading cities");
   String loadedCityName[] = loadStrings("cities.txt");  //ladda in texten till string Arrayn
-  println(loadedCityName);   
-
+  println(loadedCityName);  
+  int randCityIndex = int(random(loadedCityName.length-1));  // randomize city from text file
+  println(randCityIndex); 
+  loadedCityName[randCityIndex]=loadedCityName[randCityIndex].toUpperCase();  // konverterar till upper case
+  println(loadedCityName[randCityIndex]); 
   // charCode   for ä = 228  å = 229 ö = 246 
   println(parseChar(228), parseChar(229), parseChar(246), parseChar(228-32), parseChar(229-32), parseChar(246-32)); 
   println("&#228" + "&auml" +"\206");
   println("loading class objects");
 
   // bilen
+  println("loading graphics");
   carX= width/4;
   carY=groundL-150;
   carW=270;
@@ -83,18 +97,28 @@ void setup() {
 
 
   // bokstäverna
-  chars.add(new bokstav('e', 100, 200));
-  chars.add(new bokstav('r', 100, 300));
-  chars.add(new bokstav('e', 100, 400));
-  chars.add(new bokstav('r', 100, 500));
-  chars.add(new bokstav('e', 500, 200));
-  chars.add(new bokstav('r', 500, 300));
-  chars.add(new bokstav('e', 500, 400));
-  chars.add(new bokstav('r', 500, 500));
+  chars.add(new bokstav('N', 100, 100));
+  chars.add(new bokstav('E', 130, 100));
+  chars.add(new bokstav('W', 160, 100));
+  chars.add(new bokstav(' ', 190, 100));
+  chars.add(new bokstav('Y', 220, 100));
+  chars.add(new bokstav('O', 250, 100));
+  chars.add(new bokstav('R', 280, 100));
+  chars.add(new bokstav('K', 310, 100));
+
+  String wrongLetter;
 
   // paralax layer
   layer.add(new paralax(building, width*2, 0, building.width/2, building.height/2, -1, 0));
   layer.add(new paralax(ground, 0, int( groundL), ground.width, ground.height, -20, 0));
+
+
+
+  // ljud och musik
+  println("loading sound FX");
+  minim = new Minim(this);    
+  carSound= minim.loadFile("FX/carSound.mp3");
+  carSound.play();
 }
 
 
@@ -115,7 +139,6 @@ void draw() {
   rectMode(NORMAL);
   rect(0, 0, width, height);   // background
 
-  println(zoom);
   //displayBG();
   image( building, width-500, 0, 300, height-300);  // byggnaden
 
@@ -125,7 +148,7 @@ void draw() {
   }
 
   for (int i=0; i< chars.size (); i++) {   // updaterar & printar all bokstäver i arraylisten
-    chars.get(i).knockOff();
+    chars.get(i).update();
     chars.get(i).paint();
   }
 
@@ -153,6 +176,7 @@ void draw() {
 
   if  ( mousePressed && mouseButton == RIGHT) {     // clicka med musen för att ta tillbaka bagagen till dessa koordinater
     resetBagage();
+    resetWord();
   }
 
 
@@ -195,8 +219,9 @@ void displayCar(float x, float y, float w, float h) {  // funktion för bilen
 
 void displayInfo() {  // visa information
   fill(255);
-  text("version: "+version, width-100, 50);
-  text("Zoom: " +  nf(zoom, 1, 1), width-100, 100);
+  textSize(26);
+  text("version: "+version, width-400, 50);
+  text("Zoom: " +  nf(zoom, 1, 1), width-300, 100);
 }
 
 void displayBG() {
@@ -212,6 +237,12 @@ void resetBagage() {
     lives.get(i).angle=lives.get(i).startAngle;
     lives.get(i).rotationV=lives.get(i).startRotationV;
     lives.get(i).knockedOff= false;
+  }
+}
+
+void resetWord() {
+  for (int i=0; i< chars.size (); i++) {
+    chars.get(i).show=false;
   }
 }
 

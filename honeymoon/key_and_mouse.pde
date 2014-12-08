@@ -1,6 +1,7 @@
 void keyPressed() {
-  if(key == 'R' || key == 'r'){
-  resetBagage();
+  if(keyCode == ENTER){
+      resetBagage();
+    resetWord();
   }
 }
 

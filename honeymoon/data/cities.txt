@@ -1,9 +1,19 @@
-paris     *
-berlin
-sydney
-stockholm *
-malmö     *
-barcelona *
-new york  *
-venedig   *
-new deli  *
+pARIS
+
+lONDON
+
+nEW YORK
+
+bERLIN
+
+sYDNEY
+
+sTOCKHOLM
+
+mALMÖ
+
+bARCELONA
+
+vENEDIG
+
+nEW DELHI
