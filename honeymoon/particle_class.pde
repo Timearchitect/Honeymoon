@@ -1,5 +1,5 @@
 class particle {
-  float x, y, vx, vy, time=0, timeLimit=50, opacity=70;
+  float x, y, vx, vy, time=0, timeLimit=10, opacity=90;
   float angle, particleWidth, particleHeight;
 
   particle( float tempx, float tempy, float  tempVx, float  tempVy, float tempAngle) {   //    constructor

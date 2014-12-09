@@ -18,7 +18,7 @@ class paralax {
   }
 
   void paint() {
-    image( pic, x, y,w,h);   // display image
+    image( pic, int(x), int(y),w,h);   // display image
   }
 }
 
