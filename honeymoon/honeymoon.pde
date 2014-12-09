@@ -8,13 +8,15 @@
  //                                                                              //
  --------------------------------------------------------------------------------*/
 
-final String version= " 0.2.0";
+final String version= " 0.2.3";
 import ddf.minim.*;
 Minim minim;
-AudioPlayer carSound, bagageSound, BGM; // ljud
+AudioPlayer carSound; // ljud
+AudioPlayer bagageSound;
+AudioPlayer BGM;
 
-float angle, zoom=1, maxZoom=5;
-float groundL=0;
+float  zoom=1, maxZoom=5;
+float groundL=0, angle;
 float carX, carY, carW, carH, carVx, carVy, carAx, carVibrationOffsetX, carVibrationOffsetY;
 boolean onGround=true, gameOver=false;
 String wrongLetter= "", rightLetter= "";
@@ -33,7 +35,7 @@ ArrayList<paralax> layer = new  ArrayList<paralax>(); // empty arrayList för pa
 PImage bag1, bag2, bag3, bag4, bag5; // bagage olika versionen bilder
 PImage building, ground;  // BG
 PImage bgImage; // bakgrunds bild
-PImage car, wheel1, wheel2; // bakgrunds bild
+PImage car, wheel1, wheel2; // bil grafik
 PFont font;
 
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
@@ -50,6 +52,42 @@ void setup() {
     frame.setResizable(true);
   }
 
+
+  println("loading cities");
+  loadedCity = loadStrings("cities.txt");  //ladda in texten till string Arrayn
+  println(loadedCity);  
+  String loadedCityNames="";    // gör en tom string
+  for (int i=0; loadedCity.length > i; i++) {  // sätter samman string arrayn till string med token
+    if (i!=loadedCity.length-1) {
+      loadedCityNames += loadedCity[i]+ "," ;   // lägger in divider
+    } else {
+      loadedCityNames += loadedCity[i];  // sista har ingen divider token
+    }
+  }
+
+  loadedCityNames= loadedCityNames.toUpperCase(); // konvertera till uppercase
+  println(loadedCityNames);
+
+  loadedCityName=splitTokens(loadedCityNames, ",");  // splittokens  
+  println(loadedCityName);
+
+  randCityIndex = int(random(loadedCityName.length-1));  // randomize city from text file
+  println("Total " + (loadedCityName.length -1) + " index, randomized: "  + randCityIndex +" is: "+ loadedCityName[randCityIndex]);
+  println("loading letter objects");
+  // bokstäverna
+  for (int i=0; loadedCityName[randCityIndex].length () > i; i++) {   // create char object
+    println(loadedCityName[randCityIndex].charAt(i));
+    chars.add(new bokstav(loadedCityName[randCityIndex].charAt(i), 200+i*40, 200));  // add letters
+  }
+
+  loadedCityName[randCityIndex]=loadedCityName[randCityIndex].toUpperCase();  // konverterar till upper case
+  rightLetter=loadedCityName[randCityIndex];
+
+  // charCode   for ä = 228  å = 229 ö = 246 
+  println(parseChar(228), parseChar(229), parseChar(246), parseChar(228-32), parseChar(229-32), parseChar(246-32)); 
+  // println("&#228" + "&auml" +"\206"); html
+  println("loading bagage & paralax class objects");
+
   // create font
   println("loading font");
   font = loadFont("Chalkduster-48.vlw");
@@ -57,9 +95,9 @@ void setup() {
 
   // bilder
   print("loading images");
-  bgImage = loadImage("graphics/parisbg.png");
+  //bgImage = loadImage("graphics/parisbg.png");
   print("-");
-  building = loadImage("graphics/eiffel.png");
+  building = loadImage("graphics/"+ (loadedCityName[0]).toLowerCase()+".png");
   print("-");
   ground = loadImage("graphics/road-gravel.png");
   print("-");
@@ -80,43 +118,6 @@ void setup() {
   wheel2 = loadImage ("graphics/wheel-rear.png");
   println("|");
 
-
-  println("loading cities");
-   loadedCity = loadStrings("cities.txt");  //ladda in texten till string Arrayn
-  println(loadedCity);  
-  String loadedCityNames="";    // gör en tom string
-  for (int i=0; loadedCity.length > i; i++) {  // sätter samman string arrayn till string med token
-    if (i!=loadedCity.length-1) {
-      loadedCityNames += loadedCity[i]+ "," ;   // lägger in divider
-    } else {
-      loadedCityNames += loadedCity[i];  // sista har ingen divider token
-    }
-  }
-
-  loadedCityNames= loadedCityNames.toUpperCase(); // konvertera till uppercase
-  println(loadedCityNames);
-
-  loadedCityName=splitTokens(loadedCityNames, ",");  // splittokens  
-  println(loadedCityName);
-
-
-  randCityIndex = int(random(loadedCityName.length-1));  // randomize city from text file
-  println("Total " + (loadedCityName.length -1) + " index, randomized: "  + randCityIndex +" is: "+ loadedCityName[randCityIndex]);
-  println("loading letter objects");
-  // bokstäverna
-  for (int i=0; loadedCityName[randCityIndex].length () > i; i++) {   // create char object
-    println(loadedCityName[randCityIndex].charAt(i));
-    chars.add(new bokstav(loadedCityName[randCityIndex].charAt(i), 200+i*35, 200));  // add letters
-  }
-
-  loadedCityName[randCityIndex]=loadedCityName[randCityIndex].toUpperCase();  // konverterar till upper case
-  rightLetter=loadedCityName[randCityIndex];
-
-  // charCode   for ä = 228  å = 229 ö = 246 
-  println(parseChar(228), parseChar(229), parseChar(246), parseChar(228-32), parseChar(229-32), parseChar(246-32)); 
-  // println("&#228" + "&auml" +"\206");
-  println("loading bagage & paralax class objects");
-
   // bilen
   println("loading graphics");
   carX= width/5;
@@ -133,15 +134,23 @@ void setup() {
   lives.add(new bagage( bag1, int(140), int(-(210)), 120, 80));
 
   // paralax layer
-  layer.add(new paralax(building, width*2, 0, building.width/2, building.height/2, -1, 0));
-  layer.add(new paralax(ground, 0, int( groundL-100), ground.width, ground.height, -10, 0));
-  layer.add(new paralax(ground, 0, int( groundL), ground.width, ground.height, -20, 0));
-
+  layer.add(new paralax(0, building, width, 0, building.width/2, building.height/2, -0.5, 0));
+  layer.add(new paralax(1, ground, 0, int( groundL-110), width*2, ground.height/2, -5, 0));
+  layer.add(new paralax(1, ground, 0, int( groundL-80), ground.width, ground.height, -10, 0));
+  layer.add(new paralax(1, ground, 0, int( groundL), ground.width, ground.height, -20, 0));
+  image( building, width-500, 0, 300, height-300);  // byggnaden
   // ljud och musik
   println("loading sound FX");
   minim = new Minim(this);    
-  carSound= minim.loadFile("FX/carSound.mp3");
+ /*carSound= minim.loadFile("FX/carSound.mp3");
   carSound.play();
+  carSound.loop();*/
+ 
+  
+println((loadedCityName[0]).toLowerCase());
+  BGM = minim.loadFile("music/paris.mp3");
+  BGM.play();
+  BGM.loop();
 }
 
 
@@ -160,10 +169,8 @@ void draw() {
 
   fill(50, 100, 255);   
   rectMode(NORMAL);
-  rect(0, 0, width, height);   // blue background
+  rect(0, 0, width, height);   // blue sky background
 
-  //displayBG();
-  image( building, width-500, 0, 300, height-300);  // byggnaden
 
   for (int i=0; i< layer.size (); i++) {   // updaterar & printar all paralax lageri arraylisten
     layer.get(i).update();
@@ -219,7 +226,7 @@ void displayInfo() {  // visa information
   text("version: "+version, width-400, 50);
   text("Zoom: " +  nf(zoom, 1, 1), width-300, 100);
   text("gameOver: " + gameOver, width-300, 150);
-   text("Car X Velocity : " + carVx +"    Car Y Velocity : " + carVy , width-300, 200);
+  text("Car X Velocity : " + carVx +"    Car Y Velocity : " + carVy, width-300, 200);
 }
 
 void displayBG() {

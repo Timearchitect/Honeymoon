@@ -1,19 +1,8 @@
-pARIS
+paris
 
-lONDON
+london
 
-nEW YORK
+new york
 
-bERLIN
-
-sYDNEY
-
-sTOCKHOLM
-
-mALMÖ
-
-bARCELONA
-
-vENEDIG
-
-nEW DELHI
+giza
+pisa
