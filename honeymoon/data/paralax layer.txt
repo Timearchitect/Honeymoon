@@ -1,0 +1,5 @@
+gravel-road ,tree,tree ,lamp
+gravel-road , lamp,lamp
+bridge-road ,lamp,lamp
+sand-road , palm1 ,palm2
+gravel-road , lamp

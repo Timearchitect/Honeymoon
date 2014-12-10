@@ -1,6 +1,11 @@
 void keyPressed() {
-
-
+    if (keyCode == ENTER) {
+    resetGame();
+  }
+      if (key == ' ') {
+  }
+  
+if(!gameOver){
   if (keyCode== UP)if (onGround)carVy+= -30;
   onGround=false;
   if (keyCode== LEFT) if (carAx>-1) {
@@ -17,11 +22,6 @@ void keyPressed() {
   }
 
 
-
-  if (keyCode == ENTER) {
-
-    resetGame();
-  }
   if (keyCode == BACKSPACE) {
     println("\""+wrongLetter + "\" Are int the wrongLetter pool");
     println("\""+rightLetter + "\" Are int the rightLetter pool");
@@ -32,11 +32,10 @@ void keyPressed() {
     if  (key==229) key=char(key-32); // å
     if  (key==228) key=char(key-32); // ä
     if  (key==246) key=char(key-32); // ö
-    println(char(key));
 
     if ( checkLetters(rightLetter, key) == true) {
-    } 
-    else {
+      carVx =25/loadedCityName[randCityIndex].length();
+    } else {
       if (  checkLetters(wrongLetter, key)==false) {   // when key does not exist in the pool. Add key to the pool
         wrongLetter=wrongLetter + str(key);     
         loseLife(); // drop bagage
@@ -44,7 +43,7 @@ void keyPressed() {
     }
   }
 }
-
+}
 
 void keyReleased() {
 }

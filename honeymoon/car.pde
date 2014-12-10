@@ -21,18 +21,18 @@ void updateCar() {
 void displayCar(float x, float y, float w, float h) {  // funktion för bilen
   int wheelOffset=10, wheelSize=60;
 
-  angle += 15+carVx; // rotate
+  angle += (15+carVx)*slowFactor; // rotate
   imageMode(CORNER);
   image(car, int(x+carVibrationOffsetX), int(y+carVibrationOffsetY), w, h);  // bil chassi
 
-  if( onGround)particles.add(new particle( x+w-wheelSize, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
+  if( onGround && slowFactor!=0)particles.add(new particle( x+w-wheelSize, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
   pushMatrix();
   translate( x+w-wheelOffset*8+random(2) +wheelSize/2, y+h-wheelSize/2+random(2)+wheelSize/2);            // front wheel
   rotate(radians(angle));
   image(wheel1, 0-wheelSize/2, 0-wheelSize/2, wheelSize, wheelSize);  // hjul F
   popMatrix();
 
-  if( onGround)particles.add(new particle( x+wheelSize/2, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
+  if( onGround && slowFactor!=0)particles.add(new particle( x+wheelSize/2, y+h+wheelSize/4, -5+random(5), -3+random(2), random(360)));  // skapar rök partiklar
   pushMatrix();
   translate( x+wheelOffset+wheelSize/2+random(2), y+h-wheelSize/2+random(2)+wheelSize/2);            // front wheel
   rotate(radians(angle));
