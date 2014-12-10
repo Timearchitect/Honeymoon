@@ -6,7 +6,6 @@ class particle {
     vx=tempVx;
     vy= tempVy;
     angle=tempAngle;
-
     particleWidth=random(50);
     particleHeight=particleWidth;
     x = tempx;
