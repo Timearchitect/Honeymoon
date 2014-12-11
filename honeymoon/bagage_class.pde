@@ -49,7 +49,7 @@ class bagage {
 
   void checkBounderies() {
     if (y+bagageWidth/2>groundL-parentY) {  // when reaching ground bounceing off ground
-      particles.add(new particle( x+parentX, y+bagageHeight/2+parentY, -20+random(10), -8+random(4), random(360)));  // skapar rök partiklar
+      particles.add(new particle( 0,x+parentX, y+bagageHeight/2+parentY, -20+random(10), -8+random(4), random(360),50));  // skapar rök partiklar
       vy= vy*-1;
       vy=vy+random(5)-3;
       vx=vx+random(2)-1.6;

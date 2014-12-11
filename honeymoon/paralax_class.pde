@@ -45,15 +45,14 @@ if (x+w<0) x=width;  //reseting ground when reaching image end forwards
       break;
 
     default: // fullsceen x 2
-      if (x>0) x=-w/2;  //reseting ground when reaching image end backwards
-      if (x<-w/2) x=0;  //reseting ground when reaching image end forwards
+if (x+w<0) x=width;  //reseting ground when reaching image end forwards
     }
     x+=vx*slowFactor;
     y+=vy;
   }
 
   void paint() {
-    if (type==0) {
+    if (type==0 ||type==5) {
 
       image( pic, int(x), int(y-h), w, h);   // display image biulding
     }

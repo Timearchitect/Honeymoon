@@ -1,5 +1,5 @@
 void keyPressed() {
-  if (keyCode == ENTER && !menuScreen) {
+  if (keyCode == ENTER && !menuScreen &&(victoryScreen || gameOver || cheatEnabled)) {
     resetGame();
   }
   if (key == ' ') {

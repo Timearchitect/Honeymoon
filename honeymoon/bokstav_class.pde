@@ -17,12 +17,14 @@ class bokstav {
   }
 
   void update() {
-    if (keyPressed && !gameOver) {
-      if(parseInt(key)>96 ){
+
+    if (keyPressed && !gameOver && !menuScreen) {
+      if(parseInt(key)>96 || key == 'å'|| key == 'ä' ||  key == 'ö' ){
       key = parseChar(parseInt(key)-32); // konvertera till stor
-      //println(key);
+       
       }
       if (key == Char) {
+       
         show = true;
       }
     }

@@ -1,9 +1,8 @@
 paris
-
 london
-
 new york
 
 giza
 pisa
-
+las vegas
+mycity

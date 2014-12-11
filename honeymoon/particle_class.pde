@@ -1,32 +1,45 @@
 class particle {
   float x, y, vx, vy, time=0, timeLimit=10, opacity=90;
   float angle, particleWidth, particleHeight;
-
-  particle( float tempx, float tempy, float  tempVx, float  tempVy, float tempAngle) {   //    constructor
+  int type;
+  particle(int tempType, float tempx, float tempy, float  tempVx, float  tempVy, float tempAngle, int tempSize) {   //    constructor
+    type=tempType;
     vx=tempVx;
     vy= tempVy;
     angle=tempAngle;
-    particleWidth=random(50);
+    particleWidth=random(tempSize);
     particleHeight=particleWidth;
     x = tempx;
     y = tempy;
   }
 
   void update() {
-    x+=vx;
-    y+=vy;
-    time++;
-    opacity-=10;
+    if (type==0) {
+      x+=vx;
+      y+=vy;
+      time++;
+      opacity-=10;
+    } else {
+timeLimit=100;
+      x+=vx;
+      y+=vy;
+      time++;
+    }
   }
 
   void paint() {
-    noStroke();
-    pushMatrix();
-    translate(x, y);
-    rotate(radians(angle));
-    fill(255, opacity);
-    rect( 0, 0, particleWidth, particleHeight);
-    popMatrix();
+    if (type==0) {
+      noStroke();
+      pushMatrix();
+      translate(x, y);
+      rotate(radians(angle));
+      fill(255, opacity);
+      rect( 0, 0, particleWidth, particleHeight);
+      popMatrix();
+    } else {
+
+      image(balloon, x, y, particleWidth, particleHeight);
+    }
   }
 }
 

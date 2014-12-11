@@ -15,8 +15,8 @@
  //and the music otherwise default placeholders is executed
  // press [#] to enable cheat/dev mode!
  */
-
-final String version= " 0.4.7";
+final int defaultCities = 4; //index
+final String version= " 0.5.0";
 import ddf.minim.*;
 Minim minim;
 AudioPlayer carSound; // ljud
@@ -31,7 +31,7 @@ float carX, carY, carW, carH, carVx, carVy, carAx, carVibrationOffsetX, carVibra
 boolean onGround=true, gameOver, menuScreen=true, victoryScreen, animation=true, enableZoom=true, cheatEnabled; // screens
 String wrongLetter= "", rightLetter= "";
 int randCityIndex, letterSpacing= 70, fontSize=80, wrongLetterOffsetX=200, wrongLetterOffsetY=300, rightLetterOffsetX=200, rightLetterOffsetY=200;
-int gameOverDelay=60, gameOverTimer;
+int gameOverDelay=60, gameOverTimer, hue=0, orderMode=2, level=0;
 
 String loadedCity[] ;// loadstrings from text
 String loadedCityName[]; // här kommer all splitade stadsnamn att förvaras
@@ -41,13 +41,19 @@ ArrayList<bokstav> chars =   new  ArrayList<bokstav>(); // empty arrayList för 
 ArrayList<bagage> lives =   new  ArrayList<bagage>(); // empty arrayList för bokstäverna
 ArrayList<particle> particles =   new  ArrayList<particle>(); // empty arrayList för bokstäverna
 ArrayList<paralax> layer = new  ArrayList<paralax>(); // empty arrayList för paralax lager
+
+
+IntList orderList= new IntList(); // for cities randomizer
+
+
 // bilder
 PImage bag1, bag2, bag3, bag4, bag5; // bagage olika versionen bilder
 PImage building, gravel, stone, sand, bridge, river, tree, balloon, lamp, sol, skyline, palm, palm2, giza2, camel;  // BG
-PImage clouds; // bakgrunds bild
-PImage startPage;// screens
+PImage startPage, clouds;// bakgrunds bilder
 PImage car, wheel1, wheel2; // bil grafik
 PFont font, title;
+color backgroundColor= color(80, 120, 255);
+
 
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
 //--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
@@ -62,6 +68,7 @@ void setup() {
   if (frame != null) {  // gör program fönstret skalbar
     frame.setResizable(true);
   }
+
 
   println("loading cities");
   loadedCity = loadStrings("cities.txt");  //ladda in texten till string Arrayn
@@ -81,6 +88,11 @@ void setup() {
 
   loadedCityName=splitTokens(loadedCityNames, ",");  // splittokens  stringArray
   println(loadedCityName);
+
+  for (int i=0; defaultCities>=i; i++) {
+    orderList.append(i);
+  }
+  orderList.shuffle(); // randomize order
 
   reRoll(); // randomize from text
 
@@ -184,9 +196,10 @@ void setup() {
 
   println((loadedCityName[randCityIndex]).toLowerCase());
   // bagageDrop = minim.loadFile("FX/bagageDrop.mp3");
-  BGM = minim.loadFile("music/"+ (loadedCityName[randCityIndex]).toLowerCase() +".mp3");
-  
-  intro  = minim.loadFile("music/intro.mp3");
+
+  checkMusicFile();
+
+  intro  = minim.loadFile("music/intro.mp3"); // play intro music
   intro.play();
   intro.loop();
 }
@@ -200,7 +213,7 @@ void setup() {
 
 
 void draw() {
- // zoomAnimation();
+  // zoomAnimation();
   BGM.setGain(-100 +(100*fadeFactor));
 
   if (menuScreen) {
@@ -208,16 +221,16 @@ void draw() {
   }
 
   if (!menuScreen ) {
-     background(127);
+    background(127);
     if (cheatEnabled) {
       pushMatrix();
       translate(mouseX-width/2, mouseY-height/2);
       scale(zoom);
     }
 
-    fill(80, 120, 255);   
-    rectMode(NORMAL);
-    rect(0, 0, width, height);   // blue sky background
+
+    displayBackground();
+
 
     for (int i=0; i< layer.size (); i++) {   // updaterar & printar all paralax lageri arraylisten
       if (layer.get(i).zIndex==0) {
@@ -254,15 +267,22 @@ void draw() {
         layer.get(i).paint();
       }
     }
-    
-        for (int i=0; i< chars.size (); i++) {   // updaterar & printar all bokstäver i arraylisten
+
+    displayExtraBonusParticles();
+
+    //---------------------letters----------------------------------------------------------------------------------
+    for (int i=0; i< chars.size (); i++) {   // updaterar & printar all bokstäver i arraylisten
       chars.get(i).update();
       chars.get(i).paint();
     }
 
+
     fill(255, 0, 0);
     textSize(fontSize/2);
     text(wrongLetter, wrongLetterOffsetX, wrongLetterOffsetY);   // display all wrong letters
+    //---------------------letters----------------------------------------------------------------------------------
+
+ text("by: Anton Blomster , Alrik He ,David Knutsson , Therése , Joel Hagenblad ",0,-100);
     if (cheatEnabled)popMatrix(); // for zoom
   }
   if (gameOver==true)gameOverTimer++;
@@ -283,40 +303,89 @@ void draw() {
 //--------------------------------------------------------------*---------FUNKTIONER------*------------------------------------------------------------------
 //--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
+void displayBackground() {
+  hue=(hue<255)?hue+=6:0;
+  if ( randCityIndex > defaultCities) { //default
+    backgroundColor= color(random(255), random(255), random(255));
+    colorMode(HSB);
+    backgroundColor= color(hue, 255, 255);
+    colorMode(RGB);
+  }
+  fill(backgroundColor);   
+  rectMode(NORMAL);
+  rect(0, 0, width, height);   // blue sky background
+}
+
 
 void displayInfo() {  // visa information
   fill(0);
   textSize(26);
   text("version: "+version, width-400, 50);
-  
-  if(cheatEnabled){
-  text("Zoom: " +  nf(zoom, 1, 1), width-300, 100);
-  text("Cheating enabled , press [#] to disable." , 100, 50);
-  text("gameOver: " + gameOver, width-300, 150);
-  text("Car X Velocity : " +nf(carVx,1,1) +"    Car Y Velocity : " + carVy, width-300, 200);
-  text("BGM: " +  BGM.position() +" millis", width-300, 250); 
-  //text("prevBGM: " +  prevBGM.position(), width-300, 300);
+
+  if (cheatEnabled) {
+    text("Zoom: " +  nf(zoom, 1, 1), width-300, 100);
+    text("gameOver: " + gameOver, width-300, 150);
+    text("Car X Velocity : " +nf(carVx, 1, 1) +"    Car Y Velocity : " + carVy, width-300, 200);
+    text("BGM: " +  BGM.position() +" millis", width-300, 250); 
+    text("Level: " +  level, width-300, 300); 
+
+    text("Cheating enabled , press [#] to disable.", 100, 50);
+    text("reset level , press [Enter] or [mouse right] .", 100, 100);
+    text("delete word (win when no letters) , press [Backspace] .", 100, 150);
+    text("mouse scroll to zoom in & out, press [scroll wheel] .", 100, 200);
+
+    text("arrow keys to move the car, press [← ↑ → ↓] .", 100, 300);
+text("mouse click to drop bagage, press [mouse left] .", 100, 350);
+    //text("prevBGM: " +  prevBGM.position(), width-300, 300);
   }
 }
 
+void displayExtraBonusParticles() {
+  if ( randCityIndex > defaultCities) { //default
+    particles.add(new particle(1, int(random(width)), height, -3+random(5), -random(10)-5, 0, int(random(200))));  // skapar ballong partiklar
+  }
+}
 
 void reRoll() {
-  int  prevRand=randCityIndex;
-  while ( randCityIndex==prevRand ) {
-    randCityIndex = int(random(loadedCityName.length));  // randomize city from text file
-    println("Total index in text file: " + (loadedCityName.length -1) + " index, randomized to: "  + randCityIndex +" equals: "+ loadedCityName[randCityIndex]);
+
+  if (victoryScreen)level++; // when stage win next level
+  switch (orderMode) {
+  case 0:
+
+    randCityIndex=int(random(loadedCityName.length)); 
+    break;
+  case 1:
+    int  prevRand=randCityIndex;
+    while ( randCityIndex==prevRand ) {  // prevent the next city to be the same
+      randCityIndex = int(random(loadedCityName.length));  // randomize city from text file
+    }
+
+    break;
+  case 2:
+    if (level>defaultCities)
+    {
+      randCityIndex=5;
+      println("bonus stage");
+    } else {
+      randCityIndex=orderList.get(level);
+      println(orderList);
+    }
+    break;
   }
+
+  println("Total index in text file: " + (loadedCityName.length -1) + " index, randomized to: "  + randCityIndex +" equals: "+ loadedCityName[randCityIndex]);
 }
 
 void createLayer() {  
 
-  for  (int i=layer.size(); 0<i; i--) {
+  for  (int i=layer.size (); 0<i; i--) {
     layer.remove(i-1);
-    println(i-1);
+    //println(i-1);
   }
-  building = loadImage("graphics/"+ (loadedCityName[randCityIndex]).toLowerCase()+".png");
-
-
+  if ( randCityIndex <= defaultCities) {
+   // print(randCityIndex+":::::randCityIndex");
+    building = loadImage("graphics/"+ (loadedCityName[randCityIndex]).toLowerCase()+".png");
+  }
 
   switch (randCityIndex) {
   case   0: //paris
@@ -325,14 +394,14 @@ void createLayer() {
     layer.add(new paralax(0, building, width-300, int(groundL-100), building.width, building.height, -0.2, 0, 0));// background
     layer.add(new paralax(1, gravel, 0, int( groundL-110), int(width*2), gravel.height, -5, 0, 0));
     layer.add(new paralax(1, gravel, 0, int( groundL-80), int(width*3), int(gravel.height*3), -10, 0, 0));
-    layer.add(new paralax(1, gravel, 0, int( groundL-20), int(width*3), int(gravel.height*4), -10, 0, 0));
+    layer.add(new paralax(1, gravel, 0, int( groundL-20), int(width*3), int(gravel.height*5), -15, 0, 0));
     layer.add(new paralax(4, tree, (width/4)*3, int( groundL-450), 360, 440, -10, 0, 0));
     layer.add(new paralax(4, tree, width, int( groundL-450), 360, 440, -10, 0, 0));
     layer.add(new paralax(4, tree, width/4, int( groundL-450), 360, 440, -10, 0, 0));
     layer.add(new paralax(4, tree, (width/4)*2, int( groundL-450), 360, 440, -10, 0, 0));
-    
+
     layer.add(new paralax(2, tree, (width/4)*2, 100, tree.width*4, tree.height*4, -50, 0, 1));
-    layer.add(new paralax(2, tree, (width/4)*2,  0, tree.width*3, tree.height*3, -35, 0, 1));
+    layer.add(new paralax(2, tree, (width/4)*2, 0, tree.width*3, tree.height*3, -35, 0, 1));
     break;
 
   case   1: //london
@@ -346,13 +415,11 @@ void createLayer() {
     layer.add(new paralax(2, lamp, 500, int( groundL-450), 100, 450, -10, 0, 0));
     layer.add(new paralax(1, river, 0, int( groundL+50), int(width*4), int(bridge.height*2), -22, 0, 0));
 
-    layer.add(new paralax(1, bridge, 0, int( groundL), int(width*4), int(bridge.height*2), -35, 0, 1));
+    layer.add(new paralax(1, bridge, 0, int( groundL), int(width*4), int(bridge.height*2), -25, 0, 1));
     layer.add(new paralax(4, tree, 0, int( groundL-500), int(tree.width*2), int(tree.height*2), -30, 0, 1)); // forground
-
-    //  layer.add(new paralax(1, bridge, 0, int( groundL), int(width*4), int(bridge.height*2), -20, 0, 1));
     layer.add(new paralax(2, lamp, 0, int( groundL-500), int(lamp.width*2), int(lamp.height*2), -40, 0, 1)); // forground
     break;
-    
+
   case   2: //new york
     layer.add(new paralax(3, clouds, width, -200, int(width*2.5), int(height*1), -0.1, 0, 0));// cloud background
     layer.add(new paralax(2, skyline, 0, 100, int( width*1), int(height*0.5), 0, 0, 0));// cloud background
@@ -365,9 +432,9 @@ void createLayer() {
 
     layer.add(new paralax(2, lamp, 0, int( groundL-500), int(lamp.width*2), int(lamp.height*2), -20, 0, 1)); // forground
     break;
-    
+
   case   3: //giza
-    //layer.add(new paralax(3, clouds, width, -200, int(width*2.5), int(height*1), -0.1, 0, 0));// cloud background
+    backgroundColor= color(80, 120, 255);
     layer.add(new paralax(2, sol, width/2, 200, int( sol.width*2), int(sol.height*2), 0, 0.01, 0));// cloud background
     layer.add(new paralax(0, building, width-300, int(groundL-100), building.width, building.height, -0.2, 0, 0));// background
     layer.add(new paralax(0, giza2, width-100, int(groundL-100), giza2.width, giza2.height, -0.2, 0, 0));// background
@@ -379,7 +446,7 @@ void createLayer() {
     layer.add(new paralax(2, palm, 500, int( groundL-450), 370, 450, -10, 0, 0));
     layer.add(new paralax(2, palm2, 800, int( groundL-450), 370, 450, -10, 0, 0));
     break;
-    
+
   case   4: //pisa
     layer.add(new paralax(3, clouds, width, -200, int(width*2.5), int(height*1), -0.1, 0, 0));// cloud background
     layer.add(new paralax(2, sol, width/3, 200, int( sol.width*1), int(sol.height*1), 0, 0.01, 0));// cloud background
@@ -395,19 +462,20 @@ void createLayer() {
     layer.add(new paralax(2, lamp, 0, int( groundL-500), int(lamp.width*2), int(lamp.height*2), -20, 0, 1)); // forground
     layer.add(new paralax(2, lamp, 500, int( groundL-500), int(lamp.width*2), int(lamp.height*2), -20, 0, 1)); // forground
     break;
-    
-  default:
-    layer.add(new paralax(3, clouds, width, -200, int(width*2.5), int(height*1), -0.1, 0, 0));// cloud background
-    layer.add(new paralax(2, sol, width/2, 200, int( sol.width*2), int(sol.height*2), 0, 0.01, 0));// cloud background
-    layer.add(new paralax(0, building, width-300, int(groundL-100), building.width, building.height, -0.2, 0, 0));// background
+
+  default:  //las vegas & default
+
+      for (int i =0; i <= defaultCities; i++) {
+
+      building = loadImage("graphics/"+ (loadedCityName[i]).toLowerCase()+".png");
+      layer.add(new paralax(5, building, width-i*300, int(groundL-100), building.width, building.height, -0.3, 0, 0));// background
+    }
+
     layer.add(new paralax(1, gravel, 0, int( groundL-110), int(width*2), gravel.height, -5, 0, 0));
-    layer.add(new paralax(1, gravel, 0, int( groundL-80), int(width*3), int(gravel.height*3), -10, 0, 0));
+    layer.add(new paralax(1, gravel, 0, int( groundL-80), int(width*3), int(gravel.height*4), -10, 0, 0));
     layer.add(new paralax(2, tree, 0, int( groundL-400), 350, 400, -10, 0, 0));
     layer.add(new paralax(2, tree, 500, int( groundL-450), 370, 450, -10, 0, 0));
-    layer.add(new paralax(1, river, 0, int( groundL+50), int(width*4), int(bridge.height*2), -22, 0, 0));
-
-    layer.add(new paralax(1, bridge, 0, int( groundL), int(width*4), int(bridge.height*2), -20, 0, 1));
-    layer.add(new paralax(2, lamp, 0, int( groundL-500), int(lamp.width*2), int(lamp.height*2), -20, 0, 1)); // forground
+    layer.add(new paralax(1, sand, 0, int( groundL-50), int(width*4), int(bridge.height*5), -22, 0, 0));
   }
 }
 
@@ -432,7 +500,7 @@ void resetGame() {
    prevBGM.pause();
    prevBGM.play(BGM.position()); */
 
-  BGM.pause();
+  //BGM.pause();
   resetMusic();  // reset music to BGM 
 
 
@@ -452,7 +520,6 @@ void resetGame() {
   slowFactor=1;
   fadeFactor=1;
   emerging=400;
-  
 }
 
 void resetBagage() {
@@ -477,9 +544,10 @@ void resetWord() {
 
 void resetMusic() {
   BGM.pause();
-  BGM = minim.loadFile("music/"+ (loadedCityName[randCityIndex]).toLowerCase() +".mp3");
+  checkMusicFile();
   BGM.rewind();
   BGM.play();
+  BGM.loop();
   BGM.setGain(100);  // restore volume
   carSound.setGain(0); // restore car volume
 }
@@ -491,6 +559,7 @@ void createLetterObject() {
   }
   for (int i=0; loadedCityName[randCityIndex].length () > i; i++) {   // create char object
     println(loadedCityName[randCityIndex].charAt(i));
+
     chars.add(new bokstav(loadedCityName[randCityIndex].charAt(i), rightLetterOffsetX+i*letterSpacing, rightLetterOffsetY));  // add letters
   }
   rightLetter=loadedCityName[randCityIndex];  // set te right letters again for checking keys if right
@@ -521,6 +590,18 @@ void checkCorrectCity() {
     zoomFactor=1.01;
     victoryScreen=true;
   }   // turbo car drive
+}
+
+void checkMusicFile() {
+  File f = new File(dataPath("/music/" + loadedCityName[randCityIndex].toLowerCase())+".mp3");
+
+  if (f.exists())
+  {
+    BGM = minim.loadFile("music/"+ (loadedCityName[randCityIndex]).toLowerCase() +".mp3");
+    println((loadedCityName[randCityIndex]).toLowerCase()+ ".mp3 Audio exist!");
+  } else {
+    BGM =minim.loadFile("music/intro.mp3");  // default music
+  }
 }
 
 void zoomAnimation() {
