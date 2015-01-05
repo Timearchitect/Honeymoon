@@ -54,11 +54,11 @@ if (x+w<0) x=width;  //reseting ground when reaching image end forwards
   void paint() {
     if (type==0 ||type==5) {
 
-      image( pic, int(x), int(y-h), w, h);   // display image biulding
+      image( pic, int(x), int(y-h),int( w), int(h));   // display image biulding
     }
     else {
 
-      image( pic, int(x), int(y), w, h);   // display image
+      image( pic, int(x), int(y), int(w), int(h));   // display image
     }
   }
 }

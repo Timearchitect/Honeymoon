@@ -4,7 +4,7 @@ class bagage {
   float x, y, bagageWidth, bagageHeight, vx=-8, vy=20, gravitation=4, angle=0, rotationV=0, vibrationOffsetX, vibrationOffsetY, parentX, parentY;
   boolean knockedOff;
   PImage img;
-  float startX, startVx=-5, startVy=20, startY, startAngle=0, startRotationV=0;
+  int startX, startVx=-5, startVy=20, startY, startAngle=0, startRotationV=0;
 
 
   bagage( PImage tempImg, int tempX, int tempY, int tempWidth, int tempHeight) {   //    constructor
@@ -26,8 +26,8 @@ class bagage {
   }
   void knockOff() {
     knockedOff=true;
-    vx=random(-10)-2-carVx;
-    vy=random(-20) +carVy;
+    vx=random(-10)-2-carVx/2;
+    vy=random(-20) +carVy/2;
     // bagageDrop.rewind();
     //bagageDrop.play();
   }
@@ -49,10 +49,10 @@ class bagage {
 
   void checkBounderies() {
     if (y+bagageWidth/2>groundL-parentY) {  // when reaching ground bounceing off ground
-      particles.add(new particle( 0,x+parentX, y+bagageHeight/2+parentY, -20+random(10), -8+random(4), random(360),50));  // skapar rök partiklar
-      vy= vy*-1;
+      particles.add(new particle( 0,int(x+parentX), int(y+bagageHeight/2+parentY), -20+random(10), -8+random(4), random(360),50));  // skapar rök partiklar
+      vy=vy*-1;
       vy=vy+random(5)-3;
-      vx=vx+random(2)-1.6;
+      vx=vx+random(2)-1.7;
       rotationV=rotationV+random(20)-10;
       // bagageDrop.rewind();
       //bagageDrop.play();
@@ -83,7 +83,7 @@ class bagage {
 void loseLife() {
   int life=lives.size ()-1;
   for (int i=lives.size ()-1; i >= 0; i-- ) {
-    if (lives.get(i).knockedOff==true)life--;
+    if (lives.get(i).knockedOff)life--;
   }
   if (life==0)gameOver=true; // check if game over
 

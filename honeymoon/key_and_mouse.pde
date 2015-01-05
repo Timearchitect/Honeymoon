@@ -1,6 +1,7 @@
 void keyPressed() {
   if (keyCode == ENTER && !menuScreen &&(victoryScreen || gameOver || cheatEnabled)) {
     resetGame();
+    smokeScreen(-1);
   }
   if (key == ' ') {
   }
@@ -23,12 +24,6 @@ void keyPressed() {
       chars.remove(chars.size()-1); // tar bort den sista bokstaven
     }
 
-
-    if (keyCode == BACKSPACE && cheatEnabled) {
-      println("\""+wrongLetter + "\" Are int the wrongLetter pool");
-      println("\""+rightLetter + "\" Are int the rightLetter pool");
-    }
-
     if ((key >= 'A' && key <= 'z')  || key == 'å' || key == 'Å' || key == 'ä' || key == 'Ä' || key == 'ö' || key == 'Ö') {
       if (key >= 'a') key=char(key-32);   //ENG  alphabet convert key to upper case
       if  (key==229) key=char(key-32); // å
@@ -36,7 +31,7 @@ void keyPressed() {
       if  (key==246) key=char(key-32); // ö
 
       if ( checkLetters(rightLetter, key) == true) {
-        carVx =25/loadedCityName[randCityIndex].length();
+       
       } else {
         if (  checkLetters(wrongLetter, key)==false) {   // when key does not exist in the pool. Add key to the pool
           wrongLetter=wrongLetter + str(key);     

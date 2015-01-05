@@ -5,4 +5,4 @@ new york
 giza
 pisa
 las vegas
-mycity
+my

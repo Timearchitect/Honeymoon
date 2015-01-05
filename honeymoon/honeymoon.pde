@@ -1,12 +1,12 @@
-/*---------------------------------------------------------------------------------
- //                                                                              //
- //   - projekt "honeymoon"                                                      //
- //   | IDK Programmering                                                        //
- //   av: Anton Blomster , Alrik He ,David Knutsson , Therése , Joel Hagenblad    // 
- //      2014-11-27                                                              //
- //                                                                              //
- //                                                                              //
- --------------------------------------------------------------------------------*/
+/**--------------------------------------------------------------------------------------//
+ //                                                                                      //
+ //   - projekt "honeymoon"                                                              //
+ //   | IDK Programmering                                                                //
+ //   av: Anton Blomster , Alrik He ,David Knutsson , Therése Brändström, Joel Hagenblad  // 
+ //      2014-11-27                                                                      //
+ //                                                                                      //
+ //                                                                                      //
+ ----------------------------------------------------------------------------------------*/
 
 
 /* -----META    DATA-----------//
@@ -16,14 +16,16 @@
  // press [#] to enable cheat/dev mode!
  */
 final int defaultCities = 4; //index
-final String version= " 0.5.0";
+final String version= " 0.5.2";
 import ddf.minim.*;
 Minim minim;
 AudioPlayer carSound; // ljud
 AudioPlayer bagageSound;
 AudioPlayer BGM;
-AudioPlayer prevBGM;
+//AudioPlayer prevBGM;
 AudioPlayer bagageDrop, intro;
+
+
 
 float  zoom=1, targetZoom= 0.7, zoomFactor=0.99, maxZoom=5;
 float groundL=0, angle, slowFactor=1, addSlow=-0.004, fadeFactor=1, decreaseVolume=-0.002;
@@ -42,7 +44,6 @@ ArrayList<bagage> lives =   new  ArrayList<bagage>(); // empty arrayList för bo
 ArrayList<particle> particles =   new  ArrayList<particle>(); // empty arrayList för bokstäverna
 ArrayList<paralax> layer = new  ArrayList<paralax>(); // empty arrayList för paralax lager
 
-
 IntList orderList= new IntList(); // for cities randomizer
 
 
@@ -51,9 +52,8 @@ PImage bag1, bag2, bag3, bag4, bag5; // bagage olika versionen bilder
 PImage building, gravel, stone, sand, bridge, river, tree, balloon, lamp, sol, skyline, palm, palm2, giza2, camel;  // BG
 PImage startPage, clouds;// bakgrunds bilder
 PImage car, wheel1, wheel2; // bil grafik
-PFont font, title;
+PFont font, title;// font
 color backgroundColor= color(80, 120, 255);
-
 
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
 //--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
@@ -62,8 +62,10 @@ color backgroundColor= color(80, 120, 255);
 //--------------------------------------------------------------***************************-----------------------------------------------------------------
 
 void setup() {
+drawIcon();
+  size(displayWidth, displayHeight, OPENGL);// samma skärmstorlek
+  
 
-  size(displayWidth, displayHeight, OPENGL);
   groundL=(height/5)*4;
   if (frame != null) {  // gör program fönstret skalbar
     frame.setResizable(true);
@@ -89,7 +91,7 @@ void setup() {
   loadedCityName=splitTokens(loadedCityNames, ",");  // splittokens  stringArray
   println(loadedCityName);
 
-  for (int i=0; defaultCities>=i; i++) {
+  for (int i=0; defaultCities>=i; i++) { // lägg in  index till list
     orderList.append(i);
   }
   orderList.shuffle(); // randomize order
@@ -190,9 +192,7 @@ void setup() {
   println("loading sound FX");
   minim = new Minim(this);    
   carSound= minim.loadFile("FX/carSound.mp3");
-  carSound.setGain(0); // volume
-  carSound.play();
-  carSound.loop();
+
 
   println((loadedCityName[randCityIndex]).toLowerCase());
   // bagageDrop = minim.loadFile("FX/bagageDrop.mp3");
@@ -216,11 +216,11 @@ void draw() {
   // zoomAnimation();
   BGM.setGain(-100 +(100*fadeFactor));
 
-  if (menuScreen) {
+  if (menuScreen) {  // display menu
     displayMenu();
   }
 
-  if (!menuScreen ) {
+  if (!menuScreen ) {  
     background(127);
     if (cheatEnabled) {
       pushMatrix();
@@ -228,9 +228,7 @@ void draw() {
       scale(zoom);
     }
 
-
-    displayBackground();
-
+    displayBackground(); // background plain colored on Las vegas HSB
 
     for (int i=0; i< layer.size (); i++) {   // updaterar & printar all paralax lageri arraylisten
       if (layer.get(i).zIndex==0) {
@@ -238,8 +236,6 @@ void draw() {
         layer.get(i).paint();
       }
     }
-
-
 
     updateCar();
     displayCar(carX, carY, carW, carH); // ritar bilen ()
@@ -282,15 +278,15 @@ void draw() {
     text(wrongLetter, wrongLetterOffsetX, wrongLetterOffsetY);   // display all wrong letters
     //---------------------letters----------------------------------------------------------------------------------
 
- text("by: Anton Blomster , Alrik He ,David Knutsson , Therése , Joel Hagenblad ",0,-100);
+    text("by: Anton Blomster , Alrik He ,David Knutsson , Therése , Joel Hagenblad ", 0, -100);
     if (cheatEnabled)popMatrix(); // for zoom
   }
-  if (gameOver==true)gameOverTimer++;
+  if (gameOver)gameOverTimer++;
   if (gameOver && gameOverDelay<gameOverTimer) {
     displayGameOver();
     //gameOvertimer=0;
   }
-  if (victoryScreen == true) {
+  if (victoryScreen) {
     displayVictory();
   }
 
@@ -298,11 +294,11 @@ void draw() {
 }
 
 
-//--------------------------------------------------------------***************************-----------------------------------------------------------------
-//--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
-//--------------------------------------------------------------*---------FUNKTIONER------*------------------------------------------------------------------
-//--------------------------------------------------------------*-------------------------*------------------------------------------------------------------
-//--------------------------------------------------------------***************************-----------------------------------------------------------------
+//--------------------------------------------------------------*****************************-----------------------------------------------------------------
+//--------------------------------------------------------------*---------------------------*------------------------------------------------------------------
+//--------------------------------------------------------------*---------FUNKTIONER--------*------------------------------------------------------------------
+//--------------------------------------------------------------*---------------------------*------------------------------------------------------------------
+//--------------------------------------------------------------*****************************-----------------------------------------------------------------
 void displayBackground() {
   hue=(hue<255)?hue+=6:0;
   if ( randCityIndex > defaultCities) { //default
@@ -335,14 +331,14 @@ void displayInfo() {  // visa information
     text("mouse scroll to zoom in & out, press [scroll wheel] .", 100, 200);
 
     text("arrow keys to move the car, press [← ↑ → ↓] .", 100, 300);
-text("mouse click to drop bagage, press [mouse left] .", 100, 350);
+    text("mouse click to drop bagage, press [mouse left] .", 100, 350);
     //text("prevBGM: " +  prevBGM.position(), width-300, 300);
   }
 }
 
 void displayExtraBonusParticles() {
   if ( randCityIndex > defaultCities) { //default
-    particles.add(new particle(1, int(random(width)), height, -3+random(5), -random(10)-5, 0, int(random(200))));  // skapar ballong partiklar
+    particles.add(new particle(1, int(random(width)), height, -3+random(5), -random(10)-5, 0, int(random(150)+50)));  // skapar ballong partiklar
   }
 }
 
@@ -351,7 +347,6 @@ void reRoll() {
   if (victoryScreen)level++; // when stage win next level
   switch (orderMode) {
   case 0:
-
     randCityIndex=int(random(loadedCityName.length)); 
     break;
   case 1:
@@ -383,7 +378,7 @@ void createLayer() {
     //println(i-1);
   }
   if ( randCityIndex <= defaultCities) {
-   // print(randCityIndex+":::::randCityIndex");
+    // print(randCityIndex+":::::randCityIndex");
     building = loadImage("graphics/"+ (loadedCityName[randCityIndex]).toLowerCase()+".png");
   }
 
@@ -554,20 +549,25 @@ void resetMusic() {
 
 void createLetterObject() {
   for (int i=chars.size (); 0< i; i--) {   // create char object
-    print(i +" removed ");
+    //print(i +" removed ");
     chars.remove(i-1);
   }
-  for (int i=0; loadedCityName[randCityIndex].length () > i; i++) {   // create char object
-    println(loadedCityName[randCityIndex].charAt(i));
+  for (int i=0; particles.size ()> i; i++) {   // particle object out of way
 
+    particles.get(i).speedTrough();
+  }
+
+
+  for (int i=0; loadedCityName[randCityIndex].length () > i; i++) {   // create char object
+    //println(loadedCityName[randCityIndex].charAt(i));
     chars.add(new bokstav(loadedCityName[randCityIndex].charAt(i), rightLetterOffsetX+i*letterSpacing, rightLetterOffsetY));  // add letters
   }
   rightLetter=loadedCityName[randCityIndex];  // set te right letters again for checking keys if right
 }
 
 void createBagageObject() {
-  for (int i=lives.size (); 0< i; i--) {   // create char object
-    print(i +" removed ");
+  for (int i=lives.size (); 0< i; i--) {   // create bagage object
+    //print(i +" removed ");
     lives.remove(i-1);
   }
   lives.add(new bagage( bag5, int(50 +random(50)-25), int(-(30)), 100, 90));
@@ -579,12 +579,12 @@ void createBagageObject() {
 
 void checkCorrectCity() {
   int amount=0;
-  for (int i=0; i<chars.size (); i++) {   // check right
-    if (chars.get(i).show==true ||  chars.get(i).noDisplay==true) {
+  for (int i=0; i<chars.size (); i++) {   // check rightletters
+    if (chars.get(i).show ||  chars.get(i).noDisplay) {
       amount++;
     }
   }
-  if (amount>=chars.size()) {   // ----------------------------------------WIN--------------- !!!
+  if (amount>=chars.size()) { //  // ----------------------------------------WIN--------------- !!!
     carAx = 2;
     targetZoom= 1;
     zoomFactor=1.01;
@@ -594,11 +594,10 @@ void checkCorrectCity() {
 
 void checkMusicFile() {
   File f = new File(dataPath("/music/" + loadedCityName[randCityIndex].toLowerCase())+".mp3");
-
   if (f.exists())
   {
     BGM = minim.loadFile("music/"+ (loadedCityName[randCityIndex]).toLowerCase() +".mp3");
-    println((loadedCityName[randCityIndex]).toLowerCase()+ ".mp3 Audio exist!");
+    // println((loadedCityName[randCityIndex]).toLowerCase()+ ".mp3 Audio exist!");
   } else {
     BGM =minim.loadFile("music/intro.mp3");  // default music
   }
@@ -622,5 +621,13 @@ void zoomAnimation() {
       }
     }
   }
+}
+
+void drawIcon() {
+  final PGraphics pg = createGraphics(64, 64, JAVA2D);
+  pg.beginDraw();
+  pg.image(loadImage("icon.png"), 0, 0, 64, 64);
+  pg.endDraw();
+  frame.setIconImage(pg.image);
 }
 

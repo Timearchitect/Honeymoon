@@ -1,9 +1,8 @@
-void displayBG() {
-  image(clouds, 0, 0, clouds.width*0.4, clouds.height*0.4);  // bil
-}
-int fade=0;
+
+
+float fade=00;
 void displayMenu() {
-  int textOffsetY=height/2-25;
+  int textOffsetY=int(height/2.2), textOffsetX=int(width/2.5);
   textFont (title);
   fill(100, 10);
   imageMode(CENTER);
@@ -12,25 +11,28 @@ void displayMenu() {
   textMode(CENTER);
   fill(0);
   textSize(125);
-  text("Honeymoon", width/2-175, height/4+100);
-  textSize(48);
-  text("You are about to travel along side this", width/2-210, textOffsetY-50);
-  text("newly wed couple, on their honeymoon ", width/2-210, textOffsetY);
-  text("trip around the world.", width/2-210, textOffsetY+50);
-  text("Help the couple figure out which town is", width/2-210, textOffsetY+110);
-  text("ahead by typing the right letters.", width/2-210, textOffsetY+160);
-  text("P.S. Don't let them lose their luggage!", width/2-210, textOffsetY+240);
+  text("Honeymoon", width/2.47, height/4+100);
+  textSize(48); 
+  text("You are about to travel along side this", textOffsetX, textOffsetY-50);
+  text("newly wed couple, on their honeymoon ", textOffsetX, textOffsetY);
+  text("trip around the world.", textOffsetX, textOffsetY+50);
+  text("Help the couple figure out which town is", textOffsetX, textOffsetY+110);
+  text("ahead by typing the right letters.", textOffsetX, textOffsetY+160);
+  text("P.S. Don't let them lose their luggage!", textOffsetX, textOffsetY+240);
 
-  fill(0,fade);
-  text("press", 350,height/4*3+10);
+  fill(0, int(sin(radians(fade))*255));
+  text("press", width/5.5, height/4*3+10);
   textSize(125);
-  text("[space]", 440,height/4*3+40);
+  text("[space]", width/4.4, height/4*3+40);
 
 
-fade=(fade<255)?fade+=1:0;
+  fade=(fade<255)?fade+=1.5:0;  
 
   if (keyPressed && key == ' ') { //press space to continue
-    menuScreen=false; 
+    menuScreen=false; // deactivate menu
+    carSound.setGain(0); // volume
+    carSound.play();
+    carSound.loop();
     enterGame();
   }
   imageMode(NORMAL);
@@ -48,7 +50,7 @@ void displayGameOver() {
   noStroke();
   rect(displayWidth/2, 455, displayWidth, 400-emerging);
   fill(0);
-  textSize(40); 
+  textSize(fontSize/2); 
   if ( randCityIndex > 4) {
     text ("Welcome to "+ loadedCityName[randCityIndex] +"! You've helped us reach our destination.", 150, 420);
     text ("Press [Enter] to continue playing or press [ECS] for exit", 350, 490);
@@ -68,7 +70,7 @@ void displayVictory() {
   noStroke();
   rect(displayWidth/2, 435, displayWidth, 400-emerging);
   fill(0);
-  textSize (40);
+  textSize (fontSize/2);
   if ( randCityIndex > 4) {
     text ("Thanks for playing! You've helped us reach our destination.", 150, 400);
     text ("Press [Enter] to continue playing or press [ECS] for exit", 350, 530);
@@ -92,4 +94,11 @@ void enterGame() {
 }
 
 float emerging=400;
+
+void smokeScreen(int dir) {
+  int amount=25;
+  for ( int i=0; i< amount; i++) {
+    particles.add(new particle(0, width, (height/amount)*i, (280+random(50))*dir, 0, random(360), 500));  // skapar rök partiklar
+  }
+}
 

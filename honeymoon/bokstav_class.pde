@@ -6,26 +6,24 @@ class bokstav {
   char Char;
   boolean noDisplay = false;
 
-
   bokstav(char tempChar, int tempx, int tempy) {   //    constructor
     Char=tempChar;
     x = tempx;
     y = tempy;
-        if (Char == ' ' || Char  == '!' || Char == '?' || Char == '.' || Char == ',' || Char == '-'){
-        noDisplay = true;
+    if (Char == ' ' || Char  == '!' || Char == '?' || Char == '.' || Char == ',' || Char == '-') {
+      noDisplay = true;
     }
   }
 
   void update() {
 
     if (keyPressed && !gameOver && !menuScreen) {
-      if(parseInt(key)>96 || key == 'å'|| key == 'ä' ||  key == 'ö' ){
-      key = parseChar(parseInt(key)-32); // konvertera till stor
-       
+      if (parseInt(key)>96 || key == 'å'|| key == 'ä' ||  key == 'ö' ) {
+        key = parseChar(parseInt(key)-32); // konvertera till stor
       }
       if (key == Char) {
-       
         show = true;
+         carVx =25/loadedCityName[randCityIndex].length(); // move car
       }
     }
   }
@@ -37,11 +35,10 @@ class bokstav {
     textSize(fontSize);
     if (show && !noDisplay) {
       text (Char, x, y);
-    } else if(show == false && noDisplay == false){
+    } else if (!show && !noDisplay) {
       //line (x, y, x+font.size(), y);
       text ('_', x, y);
     }
   }
-  
 }
 
